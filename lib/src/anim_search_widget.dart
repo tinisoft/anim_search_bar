@@ -49,15 +49,16 @@ class AnimSearchBar extends StatefulWidget {
     /// The width cannot be null
     required this.width,
     required this.searchBarOpen,
+
     /// The textController cannot be null
     required this.textController,
     this.suffixIcon,
     this.prefixIcon,
     this.helpText = "Search...",
-    
+
     /// Height of wrapper container
-    this.height = 100,
-    
+    this.height = 48,
+
     /// choose your custom color
     this.color = Colors.white,
 
@@ -77,7 +78,7 @@ class AnimSearchBar extends StatefulWidget {
 
     /// The onSubmitted cannot be null
     required this.onSubmitted,
-    
+
     /// make the search bar to open from right to left
     this.rtl = false,
 
@@ -184,6 +185,14 @@ class _AnimSearchBarState extends State<AnimSearchBar>
                     borderRadius: BorderRadius.circular(30.0),
                   ),
                   child: AnimatedBuilder(
+                    builder: (context, widget) {
+                      ///Using Transform.rotate to rotate the suffix icon when it gets expanded
+                      return Transform.rotate(
+                        angle: _con.value * 2.0 * pi,
+                        child: widget,
+                      );
+                    },
+                    animation: _con,
                     child: GestureDetector(
                       onTap: () {
                         try {
@@ -196,6 +205,8 @@ class _AnimSearchBarState extends State<AnimSearchBar>
                             setState(() {
                               toggle = 0;
                             });
+
+                            widget.searchBarOpen(toggle);
 
                             ///reverse == close
                             _con.reverse();
@@ -219,22 +230,13 @@ class _AnimSearchBarState extends State<AnimSearchBar>
                       },
 
                       ///suffixIcon is of type Icon
-                      child: widget.suffixIcon != null
-                          ? widget.suffixIcon
-                          : Icon(
-                              Icons.close,
-                              size: 20.0,
-                              color: widget.textFieldIconColor,
-                            ),
+                      child: widget.suffixIcon ??
+                          Icon(
+                            Icons.close,
+                            size: 20.0,
+                            color: widget.textFieldIconColor,
+                          ),
                     ),
-                    builder: (context, widget) {
-                      ///Using Transform.rotate to rotate the suffix icon when it gets expanded
-                      return Transform.rotate(
-                        angle: _con.value * 2.0 * pi,
-                        child: widget,
-                      );
-                    },
-                    animation: _con,
                   ),
                 ),
               ),
@@ -267,17 +269,6 @@ class _AnimSearchBarState extends State<AnimSearchBar>
                     onSubmitted: (value) => {
                       widget.onSubmitted(value),
                       unfocusKeyboard(),
-                      setState(() {
-                        toggle = 0;
-                      }),
-                      widget.textController.clear(),
-                    },
-                    onEditingComplete: () {
-                      /// on editing complete the keyboard will be closed and the search bar will be closed
-                      unfocusKeyboard();
-                      setState(() {
-                        toggle = 0;
-                      });
                     },
 
                     ///style is of type TextStyle, the default is just a color black
@@ -353,16 +344,15 @@ class _AnimSearchBarState extends State<AnimSearchBar>
 
                         ///if the autoFocus is true, the keyboard will close, automatically
                         setState(() {
-                          if (widget.autoFocus) unfocusKeyboard();
+                          unfocusKeyboard();
                         });
 
                         ///reverse == close
                         _con.reverse();
                       }
+                      widget.searchBarOpen(toggle);
                     },
-
                   );
-                  widget.searchBarOpen(toggle);
                 },
               ),
             ),
